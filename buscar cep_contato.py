@@ -10,7 +10,7 @@ def buscar_cep():
         cep = input("Digite o CEP para buscar: ")
         url = f"https://viacep.com.br/ws/{cep}/json/"
 
-        resposta = request.get(url=url)
+        resposta = requests.get(url=url)
 
         status_code = resposta.status_code
         if status_code == 400:
