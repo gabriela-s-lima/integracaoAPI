@@ -2,56 +2,46 @@ import requests
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
 
-api_key = os.getenv("API_KEY_CLIMA")
+def buscar_imagens_de_gatos(limit):
+    load_dotenv()
+    api_key = os.getenv("API_KEY_CAT")
 
-def obter_dados_clima(cidade, api_key):
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={cidade}&appid={api_key}&units=metric&lang=pt_br"
-    resposta = requests.get(url)
+    if not api_key:
+        raise ValueError("API Key não encontrada nas variáveis de ambiente.")
+
+    url = "https://api.thecatapi.com/v1/images/search"
+    headers = {'x-api-key': api_key}
+    params = {"limit": limit}
+
+    resposta = requests.get(url=url, headers=headers, params=params)
+
     if resposta.status_code == 200:
-        dados = resposta.json()
-        return {
-            'cidade': cidade,
-            'temperatura': dados['main']['temp'],
-            'descricao': dados['weather'][0]['description']
-        }
+        return resposta.json()
     else:
-        return {
-            'cidade': cidade,
-            'erro': f"Não foi possível obter dados para '{cidade}' (Status {resposta.status_code})"
-        }
+        raise Exception(f"Erro ao buscar imagens: {resposta.status_code}")
 
 
-def exibir_resultados(cidades_info):
-    print("\n=== Resultados ===")
-    for info in cidades_info:
-        if 'erro' in info:
-            print(f"[{info['cidade']}] -> Erro: {info['erro']}")
-        else:
-            print(f"[{info['cidade']}] -> {info['temperatura']}°C, {info['descricao'].capitalize()}")
-
-    cidades_validas = [c for c in cidades_info if 'erro' not in c]
-    if cidades_validas:
-        mais_quente = max(cidades_validas, key=lambda x: x['temperatura'])
-        print(f"\n🔥 A cidade mais quente é {mais_quente['cidade']} com {mais_quente['temperatura']}°C.")
-    else:
-        print("\nNenhuma cidade válida para comparar temperaturas.")
+def solicitar_quantidade():
+    while True:
+        try:
+            qtd = int(input("Quantos gatos você deseja buscar? (máximo 5): "))
+            if 1 <= qtd <= 5:
+                return qtd
+            else:
+                print("Por favor, digite um número entre 1 e 5.")
+        except ValueError:
+            print("Entrada inválida. Por favor, digite um número inteiro.")
 
 
-def main():
-    api_key = os.getenv("API_KEY_CLIMA")
-    cidades = input("Digite ao menos 3 cidades separadas por vírgula: ").split(',')
-
-    if len(cidades) < 3:
-        print("Você deve informar pelo menos 3 cidades.")
-        return
-
-    cidades = [cidade.strip() for cidade in cidades]
-    dados = [obter_dados_clima(cidade, api_key) for cidade in cidades]
-    exibir_resultados(dados)
+def exibir_resultados(lista_de_gatos):
+    print("\n🐱 Imagens de gatos encontradas:")
+    for i, gato in enumerate(lista_de_gatos, start=1):
+        print(f"{i}. ID: {gato.get('id', 'N/A')}")
+        print(f"   URL: {gato.get('url', 'URL não encontrada')}\n")
 
 
 if __name__ == "__main__":
-    main()
-
+    quantidade = solicitar_quantidade()
+    imagens = buscar_imagens_de_gatos(quantidade)
+    exibir_resultados(imagens)
