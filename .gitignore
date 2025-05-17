@@ -71,3 +71,5 @@ dist/
 
 # Caches de Jupyter notebooks
 .ipynb_checkpoints/
+TheCatApi_1.py
+buscar cep_contato.py
